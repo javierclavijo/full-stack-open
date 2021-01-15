@@ -1,0 +1,9 @@
+title Note submittal at https://studies.cs.helsinki.fi/exampleapp/spa
+
+actor User
+User->Browser:      user inputs note into HTML form, clicks submit button
+note over Browser:  browser event handler makes a JS object from\nthe note's contents and the current date
+note over Browser:  browser pushes note object to\ninternal note list, re-renders it
+Browser-> Server:   HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa\nwith content-type: application/json
+note over Server:   server executes JS code that pushes\nnote object to database "main.json"
+Server->Browser:    HTTP status 201 (resource created)
