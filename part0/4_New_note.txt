@@ -1,0 +1,9 @@
+title HTTP POST request to https://studies.cs.helsinki.fi/exampleapp/notes
+
+actor User
+User->Browser:      user inputs note into HTML form, clicks submit button
+Browser-> Server:   HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note
+note over Server:   server executes JS code that creates a new\nnote object and pushes it to database "main.json"
+Server->Browser:    HTTP status 302 (redirects browser to https://studies.cs.helsinki.fi/exampleapp/notes)
+
+note over Browser:  browser sends HTTP GET request, effectively reloading the page
