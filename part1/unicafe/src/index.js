@@ -43,8 +43,8 @@ const Statistics = ({ stats }) => {
   );
 };
 
-const Button = ({ text, setter }) => {
-  return <button onClick={setter}>{text}</button>;
+const Button = ({ text, onClick }) => {
+  return <button onClick={onClick}>{text}</button>;
 };
 
 const App = () => {
@@ -54,15 +54,16 @@ const App = () => {
   const [bad, setBad] = useState(0);
 
   const handleClick = (stat, callback) => {
-    callback(stat + 1);
+    const returnFunction = () => callback(stat + 1);
+    return returnFunction;
   };
 
   return (
     <div>
       <h1>Give feedback</h1>
-      <Button setter={() => handleClick(good, setGood)} text="Good" />
-      <Button setter={() => handleClick(neutral, setNeutral)} text="Neutral" />
-      <Button setter={() => handleClick(bad, setBad)} text="Bad" />
+      <Button onClick={handleClick(good, setGood)} text="Good" />
+      <Button onClick={handleClick(neutral, setNeutral)} text="Neutral" />
+      <Button onClick={handleClick(bad, setBad)} text="Bad" />
       <Statistics stats={{ good, neutral, bad }} />
     </div>
   );

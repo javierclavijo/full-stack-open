@@ -1,10 +1,63 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 
+const Votes = ({ props }) => {
+  const maxVotes = props.votes.indexOf(Math.max.apply(null, props.votes));
+  if (props.votes.every((e) => e === 0)) {
+    return (
+      <div>
+        <h1>Anecdote with the most votes</h1>
+        <p>No votes yet</p>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <h1>Anecdote with the most votes</h1>
+      <p>{props.anecdotes[maxVotes]}</p>
+    </div>
+  );
+};
+
+const AnecdoteOfTheDay = ({ anecdote, votes }) => {
+  return (
+    <div>
+      <h1>Anecdote of the day</h1>
+      <p>{anecdote}</p>
+      <p>Has {votes} votes</p>
+    </div>
+  );
+};
+
 const App = (props) => {
   const [selected, setSelected] = useState(0);
+  const [votes, setVotes] = useState(new Array(anecdotes.length).fill(0));
 
-  return <div>{props.anecdotes[selected]}</div>;
+  function nextAnecdote() {
+    let newState = selected;
+    while (newState === selected) {
+      newState = Math.floor(Math.random() * props.anecdotes.length);
+    }
+    setSelected(newState);
+  }
+
+  function voteAnecdote() {
+    let newVotes = [...votes];
+    newVotes[selected] += 1;
+    setVotes(newVotes);
+  }
+
+  return (
+    <div>
+      <AnecdoteOfTheDay
+        anecdote={props.anecdotes[selected]}
+        votes={votes[selected]}
+      />
+      <button onClick={voteAnecdote}>Vote</button>
+      <button onClick={nextAnecdote}>Next anecdote</button>
+      <Votes props={{ anecdotes, votes }} />
+    </div>
+  );
 };
 
 const anecdotes = [
