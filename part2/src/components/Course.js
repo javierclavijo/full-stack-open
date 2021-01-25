@@ -16,7 +16,7 @@ const Content = ({ course }) => {
   return (
     <div>
       {course.parts.map((p) => (
-        <Part part={p} />
+        <Part key={p.id} part={p} />
       ))}
     </div>
   );
