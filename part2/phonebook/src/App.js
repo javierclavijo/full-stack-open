@@ -3,15 +3,36 @@ import {getPersons, postPerson, deletePerson, updatePerson} from './services/per
 import Entries from "./components/Entries";
 import {PersonSearch, NewEntryForm} from "./components/Forms";
 
+const Notification = ({message, color}) => {
+    const style = {
+        color: color,
+        background: 'whitesmoke',
+        fontSize: 20,
+        borderStyle: `solid`,
+        borderRadius: 5,
+        padding: 10,
+        marginBottom: 10
+    }
+
+    if (message === null) {
+        style.display = 'none'
+    }
+
+    return (
+        <span style={style}>{message}</span>
+    );
+}
+
 const App = () => {
     const [persons, setPersons] = useState([]);
-    const [newName, setNewName] = useState('')
-    const [newNumber, setNewNumber] = useState('')
-    const [search, setSearch] = useState('')
+    const [newName, setNewName] = useState('');
+    const [newNumber, setNewNumber] = useState('');
+    const [search, setSearch] = useState('');
+    const [notification, setNotification] = useState({message: null, color: 'green'});
 
     useEffect(() => getPersons()
         .then(response => setPersons(response)), []
-    )
+    );
 
     function handleNewName(event) {
         setNewName(event.target.value);
@@ -29,8 +50,13 @@ const App = () => {
         if (window.confirm(`Delete ${person.name}?`)) {
             deletePerson(person.id)
                 .then(response => setPersons(response))
-                .catch(() => alert(`The person ${person.name} was already deleted from server.`))
+                .catch(() => showNotification(`'${person.name}' was already deleted from server.`, 'red'))
         }
+    }
+
+    function showNotification(message, color) {
+        setNotification({...notification, message: message, color: color});
+        setTimeout(() => setNotification({...notification, message: null}), 4000)
     }
 
     function handleSubmit(event) {
@@ -41,18 +67,22 @@ const App = () => {
         }
 
         let personInDB = persons.find(p => p.name === newName);
+        let message = '';
 
         if (personInDB !== undefined && window.confirm(`${newPerson.name} is already in the phonebook, replace the old number with a new one?`)) {
             updatePerson(newPerson, personInDB.id)
                 .then(response => {
                     setPersons(response);
                 });
+            message = `Changed number of '${newName}'`
         } else {
             postPerson(newPerson)
                 .then(response => {
                     setPersons(persons.concat(response));
                 });
+            message = `Added '${newName}'`
         }
+        showNotification(message, 'green');
         setNewNumber('');
         setNewName('');
     }
@@ -61,6 +91,7 @@ const App = () => {
     return (
         <div>
             <h1>Phonebook</h1>
+            <Notification message={notification.message} color={notification.color}/>
             <PersonSearch search={search} handleSearch={handleSearch}/>
             <NewEntryForm
                 handleSubmit={handleSubmit}
