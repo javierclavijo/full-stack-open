@@ -1,38 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import axios from "axios";
-
-
-const Input = ({name, value, onChange}) => {
-    return <div>{name}: <input value={value} onChange={onChange}/></div>
-}
-
-const NewEntryForm = (props) => (
-    <div>
-        <h2>Add a new entry</h2>
-        <form onSubmit={props.handleSubmit}>
-            <Input name={"Name"} value={props.newName} onChange={props.handleNewName}/>
-            <Input name={"Number"} value={props.newNumber} onChange={props.handleNewNumber}/>
-            <div>
-                <button type="submit">Add</button>
-            </div>
-        </form>
-    </div>
-);
-
-const Entries = ({persons, search}) => (
-    <div>
-        <h2>Numbers</h2>
-        {persons.filter(p => new RegExp(search, 'i').test(p.name))
-            .map(p => <p key={p.name}>{p.name} {p.number}</p>)}
-    </div>
-);
-
-const PersonSearch = ({search, handleSearch}) => (
-    <div>
-        <h2>Search</h2>
-        <Input name={"Query"} value={search} onChange={handleSearch}/>
-    </div>
-)
+import {getPersons, postPerson, deletePerson, updatePerson} from './services/persons.js';
+import Entries from "./components/Entries";
+import {PersonSearch, NewEntryForm} from "./components/Forms";
 
 const App = () => {
     const [persons, setPersons] = useState([]);
@@ -40,10 +9,8 @@ const App = () => {
     const [newNumber, setNewNumber] = useState('')
     const [search, setSearch] = useState('')
 
-    useEffect(() =>
-        axios
-            .get("http://localhost:3001/db")
-            .then(response => setPersons(response.data.persons)), []
+    useEffect(() => getPersons()
+        .then(response => setPersons(response)), []
     )
 
     function handleNewName(event) {
@@ -58,20 +25,38 @@ const App = () => {
         setSearch(event.target.value);
     }
 
+    function handleDelete(person) {
+        if (window.confirm(`Delete ${person.name}?`)) {
+            deletePerson(person.id)
+                .then(response => setPersons(response))
+                .catch(() => alert(`The person ${person.name} was already deleted from server.`))
+        }
+    }
+
     function handleSubmit(event) {
+        event.preventDefault();
         const newPerson = {
             name: newName,
             number: newNumber
         }
-        event.preventDefault();
-        if (persons.findIndex(o => o.name === newName) !== -1) {
-            alert(`${newName} is already added to phonebook`);
+
+        let personInDB = persons.find(p => p.name === newName);
+
+        if (personInDB !== undefined && window.confirm(`${newPerson.name} is already in the phonebook, replace the old number with a new one?`)) {
+            updatePerson(newPerson, personInDB.id)
+                .then(response => {
+                    setPersons(response);
+                });
         } else {
-            setPersons(persons.concat(newPerson));
-            setNewName('');
-            setNewNumber('');
+            postPerson(newPerson)
+                .then(response => {
+                    setPersons(persons.concat(response));
+                });
         }
+        setNewNumber('');
+        setNewName('');
     }
+
 
     return (
         <div>
@@ -83,9 +68,9 @@ const App = () => {
                 handleNewName={handleNewName}
                 newNumber={newNumber}
                 handleNewNumber={handleNewNumber}/>
-            <Entries persons={persons} search={search}/>
+            <Entries persons={persons} search={search} handleDel={handleDelete}/>
         </div>
-    )
+    );
 }
 
-export default App
+export default App;
