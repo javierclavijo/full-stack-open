@@ -67,22 +67,23 @@ const App = () => {
         }
 
         let personInDB = persons.find(p => p.name === newName);
-        let message = '';
 
         if (personInDB !== undefined && window.confirm(`${newPerson.name} is already in the phonebook, replace the old number with a new one?`)) {
             updatePerson(newPerson, personInDB.id)
                 .then(response => {
                     setPersons(response);
                 });
-            message = `Changed number of '${newName}'`
+            showNotification(`Changed number of '${newName}'`, 'green');
         } else {
             postPerson(newPerson)
                 .then(response => {
                     setPersons(persons.concat(response));
-                });
-            message = `Added '${newName}'`
+                    showNotification(`Added '${newName}'`, 'green');
+                })
+                .catch(err => {
+                    showNotification(err.response.data.error, 'red');
+                })
         }
-        showNotification(message, 'green');
         setNewNumber('');
         setNewName('');
     }
